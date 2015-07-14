@@ -11,7 +11,8 @@ import csv
 # 1: incoming, 2: outgoing, 3: missed call/text
 
 def compileAll(row):
-	with open('records.csv','a') as csvfile:
+	
+	with open('records/records.csv','a') as csvfile:
 		writer = csv.writer(csvfile, delimiter=',')
     		for i in row:
 			writer.writerow(i)	
@@ -69,11 +70,16 @@ def callSorter(i):
 			d=['In','Out','Missed']
 			direction=d[int(a)-1]
 			#print 'Direction', direction
-
+			
 			found=re.search("number\":\"{\\\(.+?)\\\"}\",\"numberlabel",j[1]).group(1)
 			correspondent_id=re.sub(r'[\\,:,"]','',re.split("ONE_WAY_HASH", found, maxsplit=2)[1])
-			#print 'Correspondent_Id',correspondent_id
-
+			if correspondent_id!='':
+				#print correspondent_id
+				pass			
+			else:
+				correspondent_id='NONE'	
+				#print 'Correspondent_Id',correspondent_id
+			
 			datetime=dt.datetime.fromtimestamp(j[2]).strftime("%Y-%m-%d %H:%M:%S") #IST
 			#print datetime
 
@@ -82,10 +88,12 @@ def callSorter(i):
 			
 
 			#Finding Antenna Id
-			antenna=findAntenna(j[2],i)	
-
-			row.append([interaction,direction,str(correspondent_id),datetime,str(duration),antenna])
-
+			antenna=findAntenna(j[2],i)
+			
+			setA=[interaction,direction,correspondent_id,datetime,str(duration),antenna]	
+			#if correspondent_id=='NONE':
+			#	print setA				
+			row.append(setA)
 		compileAll(row)
 	except Exception as e:
 		pass
@@ -97,6 +105,7 @@ def textSorter(i):
 		with open("(u'edu.mit.media.funf.probe.builtin.SmsProbe',).json",'r') as file:
 			data=json.load(file)
 		row=[]
+		row.append(['interaction','direction','correspondent_id','datetime','call_duration','antenna_id'])
 		for j in data:	
 			interaction='Text'
 
@@ -108,17 +117,29 @@ def textSorter(i):
 			found=re.search("address\":\"{\\\(.+?)\\\"}\",\"body",j[1]).group(1)
 			correspondent_id=re.sub(r'[\\,:,"]','',re.split("ONE_WAY_HASH", found, maxsplit=2)[1])
 			#print 'Correspondent_Id',found
+			if correspondent_id!='':
+				#print correspondent_id
+				pass			
+			else:
+				correspondent_id='NONE'	
+				#print 'Correspondent_Id',correspondent_id
 
 			datetime=dt.datetime.fromtimestamp(j[2]).strftime("%Y-%m-%d %H:%M:%S") #IST
 			#print datetime
 
-			duration=''
+			duration='0'
 	
 			#Finding Antenna Id
 			antenna=findAntenna(j[2],i)	
-
-
-			row.append([interaction,direction,str(correspondent_id),datetime,str(duration),antenna])
+			
+			setA=[interaction,direction,correspondent_id,datetime,str(duration),antenna]	
+			#if correspondent_id=='NONE':
+			#	print setA				
+			row.append(setA)
+			try:
+    				os.remove('records.csv')
+			except OSError:
+    				pass
 		compileAll(row)
 			
 	except Exception as e:
@@ -136,6 +157,8 @@ def locationSorter(i):
 		with open("(u'edu.mit.media.funf.probe.builtin.LocationProbe',).json",'r') as file:
 			data=json.load(file)
 		row=[]
+		row.append(['place_id','latitude','longitude'])
+
 		for j in data:	
 			found=re.search("mIsFromMockProvider\":false,(.+?)\"mProvider\":", j[1]).group(1)
 			latitude=re.search("mLatitude\":(.+?),\"mLongitude\":",found).group(1)

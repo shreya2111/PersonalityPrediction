@@ -11,7 +11,7 @@ import csv
 # 1: incoming, 2: outgoing, 3: missed call/text
 
 def compileAll(row):
-	with open('record.csv','a') as csvfile:
+	with open('records.csv','a') as csvfile:
 		writer = csv.writer(csvfile, delimiter=',')
     		for i in row:
 			writer.writerow(i)	
@@ -125,7 +125,7 @@ def textSorter(i):
 		pass
 
 def compileLoc(row):
-	with open('antenna.csv','wb') as csvfile:
+	with open('antennas.csv','wb') as csvfile:
 		writer = csv.writer(csvfile, delimiter=',')
     		for i in row:
 			writer.writerow(i)	

@@ -145,16 +145,16 @@ def textSorter(i):
 def compileLoc(row):
 	with open('../scripts/antennas.csv','a') as csvfile:
 		writer = csv.writer(csvfile, delimiter=',')
-    		for i in row:
-			writer.writerow(i)	
-
+		for i in row:
+			writer.writerow(i)
+			
 def locationSorter(i):
 	try:
 		os.chdir('../'+str(i)+'_probedata')
 		with open("(u'edu.mit.media.funf.probe.builtin.LocationProbe',).json",'r') as file:
 			data=json.load(file)
 		row=[]
-		row.append(['place_id','latitude','longitude'])
+		#row.append(['place_id','latitude','longitude'])
 
 		for j in data:	
 			found=re.search("mIsFromMockProvider\":false,(.+?)\"mProvider\":", j[1]).group(1)
@@ -167,7 +167,7 @@ def locationSorter(i):
 			#Finding Antenna Id
 			antenna=findAntenna(j[2],i)	
 			row.append([antenna,latitude,longitude])
-		compileLoc(row)
+		return row
 			
 	except Exception as e:
 		pass
@@ -178,10 +178,17 @@ def main():
 		os.remove('antennas.csv')
 	except OSError:
 		pass
-	
+	row=[]
+	row.append(['place_id','latitude','longitude'])
 	for i in range(1,13):
 		print 'Folder ',i		
 		textSorter(i)
 		callSorter(i)
 		#csvSorter()
-		locationSorter(i)
+		try:
+			for r in locationSorter(i):
+				row.append(r)
+		except Exception as e:
+			pass	
+	compileLoc(row)
+
